@@ -26,7 +26,6 @@ def main():
     print(race_id_list)
     with SessionLocal() as db:
         for netkeiba_race_id in tqdm(race_id_list, desc="レース"):
-            # 中山競馬場
             print(netkeiba_race_id)
             scrape(url=f"https://db.netkeiba.com/race/{netkeiba_race_id}",db=db)
 

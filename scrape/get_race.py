@@ -34,7 +34,7 @@ def scraping_race_id_list(year: int)-> list[str]:
     get_day = datetime.date(year, 1, 1)
     race_id_list = list()
     is_end = False
-    for _ in tqdm(range(10 if isleap(year) else 365)):
+    for _ in tqdm(range(366 if isleap(year) else 365), desc="日"):
         if not is_end:
             res = get_raceid_list_from_date(get_day, cnt=cnt)
             race_id_list += res.get("res")

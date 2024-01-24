@@ -58,6 +58,7 @@ def get_race_info(soup: BeautifulSoup, db: Session, url: str)-> Race:
     return race
 
 def get_horse_info(data: list[pd.DataFrame], db: Session, race: Race)-> None:
+    # print(len(data[0]))
     for id,record in data[0].iterrows():
         jockey_name = record.iloc[6]
         if db.query(Jockey).filter_by(name=jockey_name).first() == None:
@@ -86,8 +87,11 @@ def get_horse_info(data: list[pd.DataFrame], db: Session, race: Race)-> None:
         # print(record.iloc[:])
         horse = Horse(race_id=race.id, jockey_id=jockey.id, frame_number=record.iloc[2], arrival=record.iloc[0], name=record.iloc[3], odds=record.iloc[9], popularity=record.iloc[10], handicap=record.iloc[5], weight=weight, age=age, sex_id=sex_id)
         
-        if not isinstance(horse.arrival, str): continue
-        if not horse.arrival.isdigit(): continue
+        try:
+            int(horse.arrival)
+        except:
+            print(f"found horse.arrival is not digit! {horse.arrival}")
+            continue
         # horse.show()
         db.add(horse)
         db.commit()
