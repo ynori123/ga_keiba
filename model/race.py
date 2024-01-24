@@ -4,8 +4,9 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 
 class Race(Base):
     __tablename__ = "races"
-    id: int = Column(Integer, primary_key=True, autoincrement=True, unique=True)
+    id: int = Column(String(32), primary_key=True, unique=True)
     state_id: int = Column(ForeignKey("states.id"))
+    name: str = Column(String(64))
     course: str = Column(String(64))
     is_dart: bool = Column(Boolean)
     is_right: bool = Column(Boolean)

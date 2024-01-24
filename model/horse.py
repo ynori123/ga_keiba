@@ -15,7 +15,7 @@ class Horse(Base):
     handicap: int = Column(Integer)
     weight: int = Column(Integer)
     age: int = Column(Integer)
-    sex_id: int = Column(Integer)
+    sex_id: int = Column(Integer) # 1: 牡, 2: 牝, 3: セ
     
     def show(self)-> None:
         print(
