@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 from deap import base, creator, tools, algorithms
-from data import main
+from data import fix_model_data, fix_predict_model_data
 
 # 遺伝的アルゴリズムの適応度関数
 def evalFeature(individual):
@@ -38,7 +38,7 @@ def evalFeatureWithOddsAndArrival(individual):
     return score,
 
 print("fetching data")
-data = main()
+data = fix_model_data('中山', 1800, True)
 print("data fetched")
 # 特徴量とターゲットの分離
 X = data.drop(['arrival', 'popularity'], axis=1)
@@ -53,13 +53,13 @@ toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.att
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
 toolbox.register("evaluate", evalFeature)
-toolbox.register("mate", tools.cxTwoPoint)
+toolbox.register("mate", tools.cxTwoPoint) # 二点交叉
 toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
-population = toolbox.population(n=100)
-ngen = 20
-result = algorithms.eaSimple(population, toolbox, cxpb=0.6, mutpb=0.3, ngen=ngen, verbose=True, stats=tools.Statistics(lambda ind: ind.fitness.values))
+population = toolbox.population(n=200)
+ngen = 30
+result = algorithms.eaSimple(population, toolbox, cxpb=0.6, mutpb=0.2, ngen=ngen, verbose=True, stats=tools.Statistics(lambda ind: ind.fitness.values))
 
 # 最適な特徴量セットの取得
 best_ind = tools.selBest(population, 1)[0]
@@ -77,3 +77,6 @@ features_sorted = sorted(zip(X_selected.columns, feature_importances), key=lambd
 print("Features sorted by importance:")
 for feature, importance in features_sorted:
     print(f"{feature}: {importance}")
+
+from predict import predict
+predict(best_ind, clf, fix_predict_model_data())
