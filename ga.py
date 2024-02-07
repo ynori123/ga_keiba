@@ -20,7 +20,6 @@ def evalFeatureWithOddsAndArrival(individual):
     # 個体が全てFalseの場合は、評価を行わない
     if not any(individual):
         return 0,
-
     # 選択された特徴量に基づいてデータセットをフィルタリング
     mask = np.array(individual, dtype=bool)
     X_selected = X.iloc[:, mask]
@@ -36,6 +35,50 @@ def evalFeatureWithOddsAndArrival(individual):
     score = average_odds + inverse_arrival
 
     return score,
+def ga():
+    
+    # 遺伝的アルゴリズムの個体を定義
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMax)
+
+    toolbox = base.Toolbox()
+    toolbox.register("attr_bool", np.random.randint, 0, 2)
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, n=X.shape[1])
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+    toolbox.register("evaluate", evalFeature)
+    toolbox.register("mate", tools.cxTwoPoint) # 二点交叉
+    toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+    toolbox.register("select", tools.selTournament, tournsize=3)
+
+    population = toolbox.population(n=200)
+    ngen = 2
+    result = algorithms.eaSimple(population, toolbox, cxpb=0.6, mutpb=0.2, ngen=ngen, verbose=True, stats=tools.Statistics(lambda ind: ind.fitness.values))
+
+    # 最適な特徴量セットの取得
+    best_ind = tools.selBest(population, 1)[0]
+    best_features = [f"{X.columns.values[i]}" for i, val in enumerate(best_ind) if val]
+    print(best_features)
+    X_selected = X.iloc[:, [i for i, val in enumerate(best_ind) if val]]
+    clf = RandomForestClassifier()  # ランダムフォレストは特徴量の重要度を提供する
+    clf.fit(X_selected, y)
+
+    # 特徴量の重要度に基づいてソート
+    feature_importances = clf.feature_importances_
+    features_sorted = sorted(zip(X_selected.columns, feature_importances), key=lambda x: x[1], reverse=True)
+
+    # ソートされた特徴量とその重要度を表示
+    print("Features sorted by importance:")
+    for feature, importance in features_sorted:
+        print(f"{feature}: {importance}")
+
+    from predict import predict
+    predictions = predict(best_ind, clf, fix_predict_model_data())
+
+    from improve import improve
+    improve(toolbox, predictions)
+    
+    return result
 
 print("fetching data")
 data = fix_model_data('中山', 1800, True)
@@ -43,40 +86,9 @@ print("data fetched")
 # 特徴量とターゲットの分離
 X = data.drop(['arrival', 'popularity'], axis=1)
 y = data['arrival']
-# 遺伝的アルゴリズムの個体を定義
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
 
-toolbox = base.Toolbox()
-toolbox.register("attr_bool", np.random.randint, 0, 2)
-toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, n=X.shape[1])
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+for i in range(1):
+    res = ga()
 
-toolbox.register("evaluate", evalFeature)
-toolbox.register("mate", tools.cxTwoPoint) # 二点交叉
-toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
-toolbox.register("select", tools.selTournament, tournsize=3)
-
-population = toolbox.population(n=200)
-ngen = 30
-result = algorithms.eaSimple(population, toolbox, cxpb=0.6, mutpb=0.2, ngen=ngen, verbose=True, stats=tools.Statistics(lambda ind: ind.fitness.values))
-
-# 最適な特徴量セットの取得
-best_ind = tools.selBest(population, 1)[0]
-best_features = [f"{X.columns.values[i]}" for i, val in enumerate(best_ind) if val]
-print(best_features)
-X_selected = X.iloc[:, [i for i, val in enumerate(best_ind) if val]]
-clf = RandomForestClassifier()  # ランダムフォレストは特徴量の重要度を提供する
-clf.fit(X_selected, y)
-
-# 特徴量の重要度に基づいてソート
-feature_importances = clf.feature_importances_
-features_sorted = sorted(zip(X_selected.columns, feature_importances), key=lambda x: x[1], reverse=True)
-
-# ソートされた特徴量とその重要度を表示
-print("Features sorted by importance:")
-for feature, importance in features_sorted:
-    print(f"{feature}: {importance}")
-
-from predict import predict
-predict(best_ind, clf, fix_predict_model_data())
+from figure import log
+log(res)

@@ -13,3 +13,4 @@ def predict(best_ind, clf, data):
     print("-"*30, "予測結果", "-"*30)
     data['予想順位'] = predictions
     print(data)
+    return predictions
