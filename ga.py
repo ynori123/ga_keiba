@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier
 from deap import base, creator, tools, algorithms
@@ -15,9 +16,32 @@ def evalFeature(individual):
     scores = cross_val_score(clf, X_selected, y, cv=5)
     return (scores.mean(),)
 
+def evalFeatureWithOddsAndArrival(individual):
+    # 個体が全てFalseの場合は、評価を行わない
+    if not any(individual):
+        return 0,
+
+    # 選択された特徴量に基づいてデータセットをフィルタリング
+    mask = np.array(individual, dtype=bool)
+    X_selected = X.iloc[:, mask]
+
+    # ここに、oddsとarrivalを用いた評価ロジックを実装
+    # 例: oddsの平均値を計算し、arrivalの逆数（またはその他の変換）を使用して評価値を計算
+    # この部分はプロジェクトの具体的な要件に応じて調整する必要があります
+    # 以下は仮の計算例です
+    average_odds = X_selected['odds'].mean()  # oddsの平均値
+    inverse_arrival = 1 / X_selected['arrival'].mean()  # arrivalの平均値の逆数
+
+    # 評価値を計算（ここでは、単純な和としていますが、適宜調整してください）
+    score = average_odds + inverse_arrival
+
+    return score,
+
+print("fetching data")
 data = main()
+print("data fetched")
 # 特徴量とターゲットの分離
-X = data.drop('arrival', axis=1)
+X = data.drop(['arrival', 'popularity'], axis=1)
 y = data['arrival']
 # 遺伝的アルゴリズムの個体を定義
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -33,12 +57,23 @@ toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
-population = toolbox.population(n=50)
-ngen = 100
-result = algorithms.eaSimple(population, toolbox, cxpb=0.6, mutpb=0.2, ngen=ngen, verbose=True, stats=tools.Statistics(lambda ind: ind.fitness.values))
+population = toolbox.population(n=100)
+ngen = 20
+result = algorithms.eaSimple(population, toolbox, cxpb=0.6, mutpb=0.3, ngen=ngen, verbose=True, stats=tools.Statistics(lambda ind: ind.fitness.values))
 
 # 最適な特徴量セットの取得
 best_ind = tools.selBest(population, 1)[0]
-best_features = [i for i, val in enumerate(best_ind) if val]
+best_features = [f"{X.columns.values[i]}" for i, val in enumerate(best_ind) if val]
 print(best_features)
+X_selected = X.iloc[:, [i for i, val in enumerate(best_ind) if val]]
+clf = RandomForestClassifier()  # ランダムフォレストは特徴量の重要度を提供する
+clf.fit(X_selected, y)
 
+# 特徴量の重要度に基づいてソート
+feature_importances = clf.feature_importances_
+features_sorted = sorted(zip(X_selected.columns, feature_importances), key=lambda x: x[1], reverse=True)
+
+# ソートされた特徴量とその重要度を表示
+print("Features sorted by importance:")
+for feature, importance in features_sorted:
+    print(f"{feature}: {importance}")
