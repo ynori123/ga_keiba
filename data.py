@@ -20,7 +20,7 @@ def fix_model_data(course, distance, is_dart):
 def fix_predict_model_data():
     # データの取得と前処理
     with SessionLocal() as db:
-        data = fetch_data_with_id(db, 202306010209)
+        data = fetch_data_with_id(db, 202306030710)
     df = pd.DataFrame(data, columns=['arrival', 'race_id', 'jockey_id', 'weight', 'frame_number', 'handicap', 'odds', 'popularity', 'age', 'state_id'])
     print(df.head())
     # data = group_tuples_by_second_element(data)
