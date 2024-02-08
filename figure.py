@@ -27,4 +27,4 @@ def log(result):
     plt.legend()
     
     plt.savefig(f"./graphs/{str(datetime.datetime.now())}.png", dpi=300)
-    plt.show()
+    # plt.show()
