@@ -1,11 +1,11 @@
 from sklearn.metrics import accuracy_score
 from deap import tools
 
-def improve(toolbox, predictions):
+def improve(toolbox, predictions, y):
     # 実際の結果を取得
     # この部分は、実際の結果を取得する具体的な方法によります
     # ここでは、実際の結果をy_trueとします
-    y_true = range(1, len(predictions)+1)
+    y_true = y
 
     # 予測結果と実際の結果を比較して評価
     accuracy = accuracy_score(y_true, predictions)
@@ -18,3 +18,4 @@ def improve(toolbox, predictions):
         toolbox.register("mate", tools.cxTwoPoint)
     else:
         toolbox.register("mate", tools.cxUniform, indpb=0.05)
+    return accuracy
