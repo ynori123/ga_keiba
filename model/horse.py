@@ -19,5 +19,5 @@ class Horse(Base):
     
     def show(self)-> None:
         print(
-            f"id:{self.id} race_id:{self.race_id} jockey_id:{self.jockey_id} frame_number:{self.frame_number} age:{self.age} sex_id:{self.sex_id}"
+            f"id:{self.id} arrival:{self.arrival} race_id:{self.race_id} jockey_id:{self.jockey_id} frame_number:{self.frame_number} weight:{self.weight} age:{self.age} sex_id:{self.sex_id}"
         )
