@@ -73,12 +73,11 @@ def fetch_test_data(db, url):
     res = pd.DataFrame(data=arr, columns=columns)
     return res
 
-def get_test_data():
+def get_test_data(test_data_id: str):
     with SessionLocal() as db:
-        data = fetch_test_data(db=db, url="https://db.netkeiba.com/race/202206010608")
+        data = fetch_test_data(db=db, url=f"https://db.netkeiba.com/race/{test_data_id}")
     print(data)
     # data = data.sample(frac=1).reset_index(drop=True)
     test_true = data['arrival']
     test_data = data.drop(['arrival', 'popularity'], axis=1)
     return test_data,test_true
-    # https://db.netkeiba.com/race/202406010707
