@@ -29,7 +29,7 @@ def fetch_data(session, course, distance, is_dart):
         Horse.age,
         Race.state_id
     ).join(Race, Horse.race_id == Race.id
-    ).filter_by(course=course, distance=distance, is_dart=is_dart)
+    )#.filter_by(course=course, distance=distance, is_dart=is_dart)
     data = query.all()
     # print(len(data))  # クエリのレコード数を表示
     return data
