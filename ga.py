@@ -32,10 +32,11 @@ def evalFeatureWithOddsAndArrival(individual):
     # 以下は仮の計算例です
     average_odds = X_selected['odds'].mean()  # oddsの平均値
     inverse_arrival = sqrt(1 / X_selected['arrival'].mean())  # arrivalの平均値の逆数
-
-    # 評価値を計算（ここでは、単純な和としていますが、適宜調整してください）
+    
     score = average_odds + inverse_arrival
-
+    
+    if X_selected['arrival'].mean() >= 4:
+        score /= 3
     return score,
 def ga():
     
@@ -88,14 +89,16 @@ def ga():
     
     test_data_id = ["202206010608", "202206050210", "202206050807"]
     predictions = [None,None,None]
+    test_data = [None,None,None]
+    test_true = [None,None,None]
     
     for i in range(3):
-        test_data,test_true = get_test_data(test_data_id[i])
-        predictions[i] = predict(best_ind, clf, test_data, test_true)
+        test_data[i],test_true[i] = get_test_data(test_data_id[i])
+        predictions[i] = predict(best_ind, clf, test_data[i], test_true[i])
         
-        accuracy = improve(toolbox, predictions, test_true)
+        accuracy = improve(toolbox, predictions[i], test_true[i])
         
-    return result,accuracy[:]
+    return result,accuracy
 
 print("fetching data")
 data = fix_model_data('中山', 1800, True)
