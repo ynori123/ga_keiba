@@ -84,17 +84,18 @@ def ga():
 
     from predict import predict
     from testdata import get_test_data
-    
-    test_data,test_true = get_test_data()
-    
-    predictions = predict(best_ind, clf, test_data, test_true)
-    print(test_true)
-    
     from improve import improve
     
-    accuracy = improve(toolbox, predictions, test_true)
+    test_data_id = ["202206010608", "202206050210", "202206050807"]
+    predictions = [None,None,None]
     
-    return result,accuracy
+    for i in range(3):
+        test_data,test_true = get_test_data(test_data_id[i])
+        predictions[i] = predict(best_ind, clf, test_data, test_true)
+        
+        accuracy = improve(toolbox, predictions, test_true)
+        
+    return result,accuracy[:]
 
 print("fetching data")
 data = fix_model_data('中山', 1800, True)
