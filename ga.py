@@ -62,6 +62,7 @@ def ga():
     stats.register("avg", lambda ind: sum(ind) / len(ind))
     
     result = algorithms.eaSimple(population, toolbox, cxpb=0.6, mutpb=0.2, ngen=ngen, stats=stats, verbose=True)
+    log(result)
 
     # 最適な特徴量セットの取得
     best_ind = tools.selBest(population, 1)[0]
@@ -83,11 +84,13 @@ def ga():
     from predict import predict
     from testdata import get_test_data
     test_data,test_true = get_test_data()
+    
     predictions = predict(best_ind, clf, test_data, test_true)
     print(test_true)
+    
     from improve import improve
+    
     accuracy = improve(toolbox, predictions, test_true)
-    log(result)
     
     return result,accuracy
 
@@ -98,8 +101,4 @@ print("data fetched")
 X = data.drop(['arrival', 'popularity', 'race_id'], axis=1)
 Y = data['arrival']
 
-for i in range(1):
-    res = ga()
-    if res[1] > 0.99:
-        break
-
+ga()
