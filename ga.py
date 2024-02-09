@@ -15,7 +15,7 @@ def evalFeature(individual):
     mask = np.array(individual, dtype=bool)
     X_selected = X.iloc[:, mask]
     clf = DecisionTreeClassifier()
-    scores = cross_val_score(clf, X_selected, y, cv=5)
+    scores = cross_val_score(clf, X_selected, Y, cv=5)
     return (scores.mean(),)
 
 def evalFeatureWithOddsAndArrival(individual):
@@ -69,7 +69,7 @@ def ga():
     print(best_features)
     X_selected = X.iloc[:, [i for i, val in enumerate(best_ind) if val]]
     clf = RandomForestClassifier()  # ランダムフォレストは特徴量の重要度を提供する
-    clf.fit(X_selected, y)
+    clf.fit(X_selected, Y)
 
     # 特徴量の重要度に基づいてソート
     feature_importances = clf.feature_importances_
@@ -96,7 +96,7 @@ data = fix_model_data('中山', 1800, True)
 print("data fetched")
 # 特徴量とターゲットの分離
 X = data.drop(['arrival', 'popularity', 'race_id'], axis=1)
-y = data['arrival']
+Y = data['arrival']
 
 for i in range(1):
     res = ga()
