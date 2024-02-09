@@ -81,8 +81,10 @@ def ga():
     for feature, importance in features_sorted:
         print(f"{feature}: {importance}")
 
+
     from predict import predict
     from testdata import get_test_data
+    
     test_data,test_true = get_test_data()
     
     predictions = predict(best_ind, clf, test_data, test_true)
