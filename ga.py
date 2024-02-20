@@ -8,36 +8,27 @@ from deap import base, creator, tools, algorithms
 from data import fix_model_data, fix_predict_model_data
 from figure import log
 
+from sklearn.metrics import accuracy_score, make_scorer
+
+def custom_score(y_true, y_pred):
+    score = accuracy_score(y_true, y_pred)
+    top3_true = set(np.argsort(y_true)[-3:])
+    top3_pred = set(np.argsort(y_pred)[-3:])
+    if top3_true == top3_pred:
+        score *= 1.3 
+    return score
+
 # 遺伝的アルゴリズムの適応度関数
 def evalFeature(individual):
-    if not any(individual):  # 個体が全てFalseの場合
+    if not any(individual): 
         return 0,
     mask = np.array(individual, dtype=bool)
     X_selected = X.iloc[:, mask]
     clf = DecisionTreeClassifier()
-    scores = cross_val_score(clf, X_selected, Y, cv=5)
+    custom_scorer = make_scorer(custom_score)
+    scores = cross_val_score(clf, X_selected, Y, cv=5, scoring=custom_scorer)
     return (scores.mean(),)
 
-def evalFeatureWithOddsAndArrival(individual):
-    # 個体が全てFalseの場合は、評価を行わない
-    if not any(individual):
-        return 0,
-    # 選択された特徴量に基づいてデータセットをフィルタリング
-    mask = np.array(individual, dtype=bool)
-    X_selected = X.iloc[:, mask]
-
-    # ここに、oddsとarrivalを用いた評価ロジックを実装
-    # 例: oddsの平均値を計算し、arrivalの逆数（またはその他の変換）を使用して評価値を計算
-    # この部分はプロジェクトの具体的な要件に応じて調整する必要があります
-    # 以下は仮の計算例です
-    average_odds = X_selected['odds'].mean()  # oddsの平均値
-    inverse_arrival = sqrt(1 / X_selected['arrival'].mean())  # arrivalの平均値の逆数
-    
-    score = average_odds + inverse_arrival
-    
-    if X_selected['arrival'].mean() >= 4:
-        score /= 3
-    return score,
 def ga():
     
     # 遺伝的アルゴリズムの個体を定義
